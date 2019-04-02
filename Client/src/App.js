@@ -12,7 +12,7 @@ class App extends React.Component {
         <div className="App">
           <Navbar />
           <Route exact path='/' component={ Notes }/>
-          {/* <Route path='/add' component={ NoteEdit }/> */}
+          <Route path='/add/:note_id' component={ NoteEdit }/>
           <Route path='/edit/:note_id' component={ NoteEdit } />
           <Route path='/details/:note_id' component={ NoteDetails }/>
         </div>
