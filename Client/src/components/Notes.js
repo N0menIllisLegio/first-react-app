@@ -11,33 +11,44 @@ class Notes extends React.Component {
     }
 
     componentDidMount() {
-        Axios.get('https://jsonplaceholder.typicode.com/posts')
+        Axios.get('http://localhost:5000/api/note/all')
+            .then(response => {
+                    this.setState({
+                        notes: response.data,
+                        displayedNotes: response.data })
+                    })
+    }
+
+    handleCompleteCheckbox = (e) => {
+        Axios.patch(`http://localhost:5000/api/complete/note?id=${ e.target.id }`, { status: e.target.checked })
             .then(response => 
                     this.setState({
-                        notes: response.data.slice(0, 10),
-                        displayedNotes: response.data.slice(0, 10)
-                    }))
+                        notes: response.data })
+                )
     }
 
     handleSelectChange = (e) => {
-        let selectedRow = e.target.value
-        switch (selectedRow) {
+        switch (e.target.value) {
             case '1':
                 this.setState({
-                    displayedNotes: [...this.state.notes.filter(note => note.title.length > 20)]
+                    displayedNotes: this.state.notes.filter(note => new Date(note.date) <= new Date())
                 })
                 break;
             case '2':
                 this.setState({
-                    displayedNotes: [...this.state.notes.filter(note => note.title.length < 15)]
+                    displayedNotes: this.state.notes.filter(note => new Date(note.date) > new Date())
                 })
                 break;
             case '3':
                 this.setState({
-                    displayedNotes: [...this.state.notes.filter(note => note.body.length < 150)]
+                    displayedNotes: this.state.notes.filter(note => note.complete)
                 })
                 break;
-            case '0':
+            case '4':
+                this.setState({
+                    displayedNotes: this.state.notes.filter(note => note.date === '')
+                })
+                break;
             default:
                 this.setState({
                     displayedNotes: [...this.state.notes]
@@ -50,23 +61,23 @@ class Notes extends React.Component {
         return (
             this.state.displayedNotes.map(note => { return (
                 <div className="card hoverable" key={ note.id }>                        
-                    <div className="card-content" onClick={ () => this.props.history.push('details/' + note.id) }>
+                    <div className="changeCursor card-content" onClick={ () => this.props.history.push('details/' + note.id) }>
                         <span className="card-title center">{ note.title }</span>
-                        <p>{ note.body }</p>
+                        <pre>{ note.content }</pre>
                     </div>
 
                     <div className="card-action row valign-wrapper">
                         <div className="col s3 left-align">
                             <form>     
                                 <label>
-                                    <input type="checkbox" className="complete-checkbox"/>
+                                    <input id={note.id} type="checkbox" defaultChecked={note.complete} className="complete-checkbox" onClick={ this.handleCompleteCheckbox }/>
                                     <span>Complete</span>
                                 </label>
                             </form>
                         </div>
 
                         <div className="col s6 center-align">
-                            <p>{ 'Tuesday, 16 April, 2019' }</p>
+                            <p>{ note.date }</p>
                         </div>
 
                         <div className="col s3 right-align">
@@ -95,6 +106,9 @@ class Notes extends React.Component {
                     </option>
                     <option value="3">
                         Completed notes
+                    </option>
+                    <option value="4">
+                        Timeless notes
                     </option>
                 </Select>
 
