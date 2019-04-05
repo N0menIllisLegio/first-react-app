@@ -15,6 +15,12 @@ class NoteDetails extends React.Component {
                         notes: response.data 
                     })
                 )
+            .catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/authentification/1');
+                    }
+                }
+            )
     }
 
     handleDelete = (e) => {
@@ -22,6 +28,12 @@ class NoteDetails extends React.Component {
             .then(response => 
                     this.props.history.push('/')
                 )
+            .catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/authentification/1');
+                    }
+                }
+            )
     }
 
     componentDidMount() {
@@ -30,6 +42,12 @@ class NoteDetails extends React.Component {
             .then(response => this.setState({
                     note: response.data
             }))
+            .catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/authentification/1');
+                    }
+                }
+            )
     }
 
     render() {
@@ -37,7 +55,9 @@ class NoteDetails extends React.Component {
         <div className="note card">
             <div className="card-content">
                 <span className="card-title center">{ this.state.note.title }</span>
+                <blockquote>
                 <pre>{ this.state.note.content }</pre>
+                </blockquote>
             </div>
             <div className="card-action row valign-wrapper">
                 <div className="col s4 left-align">
@@ -50,7 +70,7 @@ class NoteDetails extends React.Component {
                 </div>
 
                 <div className="col s4 center-align">
-                    <p>{ this.state.note.date }</p>
+                    <p className="">{ this.state.note.date }</p>
                 </div>
                 <div className="col s4 right-align">
                     <button className="btn red darken-3 " onClick={ this.handleDelete }>

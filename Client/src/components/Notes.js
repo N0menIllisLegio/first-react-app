@@ -17,6 +17,12 @@ class Notes extends React.Component {
                         notes: response.data,
                         displayedNotes: response.data })
                     })
+            .catch(error => {
+                    if (error.response.status === 401) {
+                        this.props.history.push('/authentification/1');
+                    }
+                }
+            )
     }
 
     handleCompleteCheckbox = (e) => {
@@ -24,6 +30,12 @@ class Notes extends React.Component {
             .then(response => 
                     this.setState({
                         notes: response.data })
+                )
+            .catch(error => {
+                        if (error.response.status === 401) {
+                            this.props.history.push('/authentification/1');
+                        }
+                    }
                 )
     }
 

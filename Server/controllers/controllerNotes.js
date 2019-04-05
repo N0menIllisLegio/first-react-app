@@ -39,27 +39,27 @@ function GetNotes() {
 
 function RewriteNotes(notes) {
 	let data = JSON.stringify(notes);
-	fs.writeFileSync("notes.json", data);
+	fs.writeFileSync(notesDB, data);
 }
 
 module.exports.getNote = function(request, response) {
-	if(!request.query) return response.sendStatus(400);
+	if(!request.query) return response.status(400).send({status: 'error', msg: 'Empty query of request'});
 	let note = GetNote(request.query.id);
 
 	if (note != null) {
-		response.send(note);
+		response.status(200).send(note);
 	} else {
-		response.sendStatus(404);
+		response.status(404).send({status: 'error', msg: 'Such note doesnt exists'});
 	}
 }
 
 module.exports.getAllNotes = function(request, response) {
 	let notes = GetNotes();
-	response.send(notes);
+	response.status(200).send(notes);
 }
 
 module.exports.complete = function(request, response) {
-	if(!request.body || !request.query) return response.sendStatus(400);
+	if(!request.body || !request.query) return response.status(400).send({status: 'error', msg: 'Empty query of request'});
 	let notes = GetNotes();
 	let id = request.query.id;
 	let status = request.body.status;
@@ -73,11 +73,11 @@ module.exports.complete = function(request, response) {
 	}
 	
 	RewriteNotes(notes);
-	response.send(notes);
+	response.status(200).send(notes);
 }
 
 module.exports.addNote = function(request, response) {
-	if(!request.body) return response.sendStatus(400);
+	if(!request.body) return response.status(400).send({status: 'error', msg: 'Empty body of request'});
 
 	let notes = GetNotes();
 	let note = {
@@ -90,7 +90,7 @@ module.exports.addNote = function(request, response) {
 
 	let maxId = Math.max.apply(Math, notes.map(parseNote => parseNote.id));
 
-	if (maxId == Infinity) {
+	if (maxId == Infinity || maxId == -Infinity) {
 		maxId = 0;
 	}
 
@@ -98,11 +98,11 @@ module.exports.addNote = function(request, response) {
 	notes.push(note);
 	console.log('ADDED', note);
 	RewriteNotes(notes);
-	response.send(note);
+	response.status(200).send(note);
 }
 
 module.exports.updateNote = function(request, response) {
-	if(!request.body) return response.sendStatus(400);
+	if(!request.body) return response.status(400).send({status: 'error', msg: 'Empty body of request'});
 	let notes = GetNotes();
 
 	for (var i = notes.length - 1; i >= 0; i--) {
@@ -117,11 +117,11 @@ module.exports.updateNote = function(request, response) {
 	
 	
 	RewriteNotes(notes);
-	response.sendStatus(200);
+	response.status(200).send({status: 'success', msg: 'Note changed'});
 }
 
 module.exports.deleteNote = function(request, response) {
-	if(!request.query) return response.sendStatus(400);
+	if(!request.query) return response.status(400).send({status: 'error', msg: 'Empty query of request'});
     let id = request.query.id;
     let notes = GetNotes();
     let index = -1;
@@ -138,8 +138,8 @@ module.exports.deleteNote = function(request, response) {
         notes.splice(index, 1)[0];
 		RewriteNotes(notes);
 	
-        response.sendStatus(200);
+        response.status(200).send({status: 'success', msg: 'Note deleted'});
     } else {
-        response.sendStatus(404);
+        response.status(404).send({status: 'error', msg: 'Such note doesnt exists'});
     }
 }

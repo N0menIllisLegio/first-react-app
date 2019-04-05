@@ -30,6 +30,12 @@ class NoteEdit extends React.Component {
                         M.textareaAutoResize($('#body_text'));
                         M.updateTextFields();
                     })
+                    .catch(error => {
+                            if (error.response.status === 401) {
+                                this.props.history.push('/authentification/1');
+                            }
+                        }
+                    )
         } else {
             this.setState({
                 note: { 
@@ -56,12 +62,24 @@ class NoteEdit extends React.Component {
             Axios.post('http://localhost:5000/api/add/note', { note: note })
                 .then( response =>
                     this.props.history.push('/details/' + response.data.id)
-                );
+                )
+                .catch(error => {
+                        if (error.response.status === 401) {
+                            this.props.history.push('/authentification/1');
+                        }
+                    }
+                )
         } else {
             Axios.put(`http://localhost:5000/api/update/note?id=${ note.id }`, { note: note })
                 .then( response =>
                     this.props.history.push('/details/' + note.id)
-                );
+                )
+                .catch(error => {
+                        if (error.response.status === 401) {
+                            this.props.history.push('/authentification/1');
+                        }
+                    }
+                )
         }
     }
 

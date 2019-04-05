@@ -1,20 +1,32 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const cors = require('cors');
-
-const controllerNotes = require('./controllerNotes.js');
+var jwt = require('jsonwebtoken');
+const users = require('./routes/users.js');
+const notes = require('./routes/notes.js');
 const server = express();
+
+server.set('secretKey', 'nodeRestApi');
 
 server.use(cors());
 server.use(bodyParser.urlencoded({ extended: false }));
 server.use(bodyParser.json());
 
-server.patch('/api/complete/note', controllerNotes.complete);
-server.delete('/api/delete/note', controllerNotes.deleteNote);
-server.put('/api/update/note', controllerNotes.updateNote);
-server.post('/api/add/note', controllerNotes.addNote);
+server.use('/api', validateUser, notes);
+server.use('/users', users);
 
-server.get('/api/note/all', controllerNotes.getAllNotes);
-server.get('/api/note', controllerNotes.getNote);
+server.use((request, response) => { response.status(404).send({}) });
 
 server.listen(5000);
+
+function validateUser(req, res, next) {
+    jwt.verify(req.headers['x-access-token'], req.app.get('secretKey'), function(err, decoded) {
+      if (err) {
+        res.status(401).send({status:"error", message: err.message, data: null});
+      }else{
+        // add user id to request
+        req.body.userId = decoded.id;
+        next();
+      }
+    });
+}
