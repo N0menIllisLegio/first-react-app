@@ -23,7 +23,7 @@ function validateUser(req, res, next) {
     jwt.verify(req.headers['x-access-token'], req.app.get('secretKey'), function(err, decoded) {
       if (err) {
         res.status(401).send({status:"error", message: err.message, data: null});
-      }else{
+      } else {
         // add user id to request
         req.body.userId = decoded.id;
         next();
