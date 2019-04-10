@@ -6,25 +6,40 @@ import NoteEdit from './components/NoteEdit';
 import NoteDetails from './components/NoteDetails'
 import Authentification from './components/Authentification';
 import Registration from './components/Registration';
-import Axios from 'axios';
-
+import io from 'socket.io-client';
 
 class App extends React.Component {
   state = {
-    username: null
+    username: null,
+    socket: null
   }
 
   setUser = (data) => {
-    Axios.defaults.headers.common['x-access-token'] = data.token;
-    this.setState({ 
-      username: data.username
+    localStorage.setItem('authToken', data.token);
+
+    let socket = io('http://localhost:5000', {
+        query: {
+          token: localStorage.getItem('authToken')
+        }
     });
+
+    socket.on('error', (err) => {
+      localStorage.removeItem('authToken');
+      this.props.history.push('/');
+    });
+     
+    this.setState({ 
+      username: data.username,
+      socket: socket
+    }); 
   }
 
   deleteUser = () => {
-    Axios.defaults.headers.common['x-access-token'] = null;
+    localStorage.removeItem('authToken');
+    this.state.socket.close();
     this.setState({
-      username: null
+      username: null,
+      socket: null
     });
   }
 
@@ -33,12 +48,12 @@ class App extends React.Component {
       <BrowserRouter>
         <div className="App">
           <Navbar username={ this.state.username } deleteUser= { this.deleteUser } />
-          <Route exact path='/' component={ Notes }/>
+          <Route exact path='/' render={(props) => <Notes {...props} socket={ this.state.socket } />}/>
           <Route path='/authentification/:notification' render={(props) => <Authentification {...props} setUser={ this.setUser } />}/>
           <Route path='/registration' component={ Registration }/>
-          <Route path='/add/:note_id' component={ NoteEdit }/>
-          <Route path='/edit/:note_id' component={ NoteEdit } />
-          <Route path='/details/:note_id' component={ NoteDetails }/>
+          <Route path='/add/:note_id' render={(props) => <NoteEdit {...props} socket={ this.state.socket } />}/>
+          <Route path='/edit/:note_id' render={(props) => <NoteEdit {...props} socket={ this.state.socket } />}/>
+          <Route path='/details/:note_id' render={(props) => <NoteDetails {...props} socket={ this.state.socket } />}/>
         </div>
       </BrowserRouter>
     );

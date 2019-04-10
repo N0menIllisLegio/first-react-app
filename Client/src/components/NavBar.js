@@ -4,7 +4,6 @@ import { Link, withRouter } from 'react-router-dom'
 class Navbar extends React.Component {
 
     handleLogOut = () => {
-        localStorage.removeItem('authToken');
         this.props.deleteUser();
     }
 

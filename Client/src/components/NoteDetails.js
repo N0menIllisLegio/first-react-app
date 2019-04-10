@@ -1,5 +1,4 @@
 import React from 'react';
-import Axios from 'axios';
 import Loading from './Loading';
 
 
@@ -9,45 +8,31 @@ class NoteDetails extends React.Component {
     }
 
     handleCompleteCheckbox = (e) => {
-        Axios.patch(`http://localhost:5000/api/complete/note?id=${ e.target.id }`, { status: e.target.checked })
-            .then(response => 
-                    this.setState({
-                        notes: response.data 
-                    })
-                )
-            .catch(error => {
-                    if (error.response.status === 401) {
-                        this.props.history.push('/authentification/1');
-                    }
-                }
-            )
+        this.props.socket.emit('change note status', e.target.id, e.target.checked);
     }
 
     handleDelete = (e) => {
-        Axios.delete(`http://localhost:5000/api/delete/note?id=${ this.state.note.id }`)
-            .then(response => 
-                    this.props.history.push('/')
-                )
-            .catch(error => {
-                    if (error.response.status === 401) {
-                        this.props.history.push('/authentification/1');
-                    }
-                }
-            )
+        this.props.socket.on('deleted', (data) => {
+            this.props.history.push('/');
+        });
+
+        this.props.socket.emit('delete note', this.state.note.id);
     }
 
     componentDidMount() {
         const id = this.props.match.params.note_id;
-        Axios.get(`http://localhost:5000/api/note?id=${ id }`)
-            .then(response => this.setState({
-                    note: response.data
-            }))
-            .catch(error => {
-                    if (error.response.status === 401) {
-                        this.props.history.push('/authentification/1');
-                    }
-                }
-            )
+
+        if (this.props.socket) {
+            this.props.socket.on('note', (data) => {
+                this.setState({
+                    note: data
+                });
+            })
+
+            this.props.socket.emit('get note', id);
+        } else {
+            this.props.history.push('/authentification/1');
+        }
     }
 
     render() {

@@ -1,5 +1,4 @@
 import React from 'react';
-import Axios from 'axios';
 import Loading from './Loading'
 import $ from "jquery";
 import M from "materialize-css";
@@ -19,24 +18,23 @@ class NoteEdit extends React.Component {
         const id = this.props.match.params.note_id;
 
         if (id !== '-1') {
-            Axios.get(`http://localhost:5000/api/note?id=${ id }`)
-                    .then(response => { 
-                        this.setState({
-                            id: response.data.id,
-                            title: response.data.title,
-                            content: response.data.content,
-                            date: response.data.date,
-                        });
-                        M.textareaAutoResize($('#body_text'));
-                        M.updateTextFields();
-                    })
-                    .catch(error => {
-                            if (error.response.status === 401) {
-                                this.props.history.push('/authentification/1');
-                            }
-                        }
-                    )
-        } else {
+            if (this.props.socket) {
+                this.props.socket.on('note', (data) => {
+                    this.setState({
+                        id: data.id,
+                        title: data.title,
+                        content: data.content,
+                        date: data.date,
+                    });
+                    M.textareaAutoResize($('#body_text'));
+                    M.updateTextFields();
+                })
+
+                this.props.socket.emit('get note', id);
+            } else {
+                this.props.history.push('/authentification/1');
+            }
+        } else { 
             this.setState({
                 note: { 
                     title: '',
@@ -56,30 +54,16 @@ class NoteEdit extends React.Component {
             date: this.state.date
         };
 
-        console.log(note);
-
         if (note.id === null) {
-            Axios.post('http://localhost:5000/api/add/note', { note: note })
-                .then( response =>
-                    this.props.history.push('/details/' + response.data.id)
-                )
-                .catch(error => {
-                        if (error.response.status === 401) {
-                            this.props.history.push('/authentification/1');
-                        }
-                    }
-                )
+            this.props.socket.on('new note', (data) => 
+                this.props.history.push('/details/' + data.id));
+
+            this.props.socket.emit('add note', note);
         } else {
-            Axios.put(`http://localhost:5000/api/update/note?id=${ note.id }`, { note: note })
-                .then( response =>
-                    this.props.history.push('/details/' + note.id)
-                )
-                .catch(error => {
-                        if (error.response.status === 401) {
-                            this.props.history.push('/authentification/1');
-                        }
-                    }
-                )
+            this.props.socket.on('updated', (data) => 
+                this.props.history.push('/details/' + note.id));
+
+            this.props.socket.emit('update note', note.id, note);
         }
     }
 

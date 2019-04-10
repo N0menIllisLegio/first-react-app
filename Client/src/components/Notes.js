@@ -1,5 +1,4 @@
 import React from 'react'
-import Axios from 'axios'
 import { Link } from 'react-router-dom'
 import Loading from './Loading'
 import { Select } from 'react-materialize'
@@ -11,32 +10,22 @@ class Notes extends React.Component {
     }
 
     componentDidMount() {
-        Axios.get('http://localhost:5000/api/note/all')
-            .then(response => {
-                    this.setState({
-                        notes: response.data,
-                        displayedNotes: response.data })
-                    })
-            .catch(error => {
-                    if (error.response.status === 401) {
-                        this.props.history.push('/authentification/1');
-                    }
-                }
-            )
+        if (this.props.socket === null) {
+            this.props.history.push('/authentification/1');
+        } else {
+            this.props.socket.on('notes', (data) => {
+                this.setState({
+                    notes: data,
+                    displayedNotes: data
+                })
+            })
+
+            this.props.socket.emit('get all notes');
+        }
     }
 
     handleCompleteCheckbox = (e) => {
-        Axios.patch(`http://localhost:5000/api/complete/note?id=${ e.target.id }`, { status: e.target.checked })
-            .then(response => 
-                    this.setState({
-                        notes: response.data })
-                )
-            .catch(error => {
-                        if (error.response.status === 401) {
-                            this.props.history.push('/authentification/1');
-                        }
-                    }
-                )
+        this.props.socket.emit('change note status', e.target.id, e.target.checked);
     }
 
     handleSelectChange = (e) => {
