@@ -1,5 +1,6 @@
 import React from 'react'
 import Axios from 'axios'
+import test from './DataController'
 
 class Authentification extends React.Component {
     state = {
@@ -47,6 +48,7 @@ class Authentification extends React.Component {
                 Axios.post('http://localhost:5000/users/login', { username: username, password: password })
                         .then(response => { 
                             this.props.setUser(response.data);
+                            localStorage.setItem('authToken', response.data.token);
                             this.props.history.push('/'); 
                         })
                         .catch(error => {
@@ -74,6 +76,11 @@ class Authentification extends React.Component {
 
             </div>
         )
+
+        var a = test;
+        // a.on('connect', function() {
+        //     console.log('connected to server');
+        // });
 
         return(
             <div className="container">
