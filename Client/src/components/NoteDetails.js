@@ -2,8 +2,8 @@ import React from 'react';
 import Loading from './Loading';
 import FileTable from './FileTable';
 
-
 class NoteDetails extends React.Component {
+    _isMounted = false;
     state = {
         note: null
     }
@@ -21,19 +21,26 @@ class NoteDetails extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
         const id = this.props.match.params.note_id;
 
         if (this.props.socket) {
             this.props.socket.on('note', (data) => {
-                this.setState({
-                    note: data
-                });
+                if (this._isMounted) {
+                    this.setState({
+                        note: data
+                    });
+                }
             })
 
             this.props.socket.emit('get note', id);
         } else {
             this.props.history.push('/authentification/1');
         }
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     render() {

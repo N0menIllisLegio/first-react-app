@@ -4,24 +4,31 @@ import Loading from './Loading'
 import { Select } from 'react-materialize'
 
 class Notes extends React.Component {
+    _isMounted = false;
     state = {
         notes: null,
         displayedNotes: null
     }
 
     componentDidMount() {
+        this._isMounted = true;
         if (this.props.socket === null) {
             this.props.history.push('/authentification/1');
         } else {
             this.props.socket.on('notes', (data) => {
-                this.setState({
-                    notes: data,
-                    displayedNotes: data
-                })
+                if (this._isMounted)
+                    this.setState({
+                        notes: data,
+                        displayedNotes: data
+                    })
             })
 
             this.props.socket.emit('get all notes');
         }
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     handleCompleteCheckbox = (e) => {
@@ -29,6 +36,7 @@ class Notes extends React.Component {
     }
 
     handleSelectChange = (e) => {
+        if (this._isMounted)
         switch (e.target.value) {
             case '1':
                 this.setState({

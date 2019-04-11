@@ -2,6 +2,7 @@ import React from 'react'
 import Axios from 'axios';
 
 class Registration extends React.Component {
+    _isMounted = false;
     state = {
         username: '',
         password: '',
@@ -10,6 +11,14 @@ class Registration extends React.Component {
         errorPassMess: '',
         errorLogClass: 'helper-text hide',
         errorLogMess: ''
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     handleUsernameChange = e => {
@@ -55,9 +64,10 @@ class Registration extends React.Component {
                         .then(response => { this.props.history.push('/authentification/0') })
                         .catch(error =>  {
                             if (error.response.data.msg === 'User with this username already exists') {
-                            this.setState({ 
-                                errorLogClass: 'helper-text red-text',
-                                errorLogMess: error.response.data.msg
+                                if (this._isMounted)
+                                this.setState({ 
+                                    errorLogClass: 'helper-text red-text',
+                                    errorLogMess: error.response.data.msg
                             })}});
                 }
             } else {

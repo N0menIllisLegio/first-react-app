@@ -2,6 +2,8 @@ import React from 'react'
 import Axios from 'axios'
 
 class Authentification extends React.Component {
+    _isMounted = false;
+
     state = {
         username: '',
         password: '',
@@ -9,6 +11,14 @@ class Authentification extends React.Component {
         errorPassMess: '',
         errorLogClass: 'helper-text hide',
         errorLogMess: ''
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     handleUsernameChange = e => {
@@ -51,9 +61,10 @@ class Authentification extends React.Component {
                         })
                         .catch(error => {
                             if (error.response.data.msg === 'Incorrect username' || error.response.data.msg === 'Incorrect password')
-                            this.setState({ 
-                                errorLogClass: 'helper-text red-text',
-                                errorLogMess: error.response.data.msg
+                                if (this._isMounted)    
+                                    this.setState({ 
+                                        errorLogClass: 'helper-text red-text',
+                                        errorLogMess: error.response.data.msg
                         })});
             }
         }  

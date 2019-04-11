@@ -5,6 +5,7 @@ import Axios from 'axios';
 
 class FileTable extends React.Component {
     uploader = null;
+    _isMounted = false;
 
     state = {
         noteId: null,
@@ -14,15 +15,18 @@ class FileTable extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
+
         if (this.props.socket) {
             const id = this.props.id;
 
             this.props.socket.on('files', (data) => {
-                this.setState({
-                    files: data
-                });
+                if (this._isMounted)
+                    this.setState({
+                        files: data
+                    });
             })
-
+            
             this.setState({
                 noteId: id
             })
@@ -34,19 +38,19 @@ class FileTable extends React.Component {
                 event.file.meta.noteId = id;
             });
             this.props.socket.emit('get files', id);
-
         } else {
             this.props.history.push('/authentification/1');
         }
     }
 
     componentWillUnmount() {
-        // console.
+        this._isMounted = false;
+
         // this.uploader.removeEventListener('start', function(event) {
         //     event.file.meta.noteId = this.state.noteId;
         // })
-        // this.uploader.destroy();
-        // this.uploader = null;
+        this.uploader.destroy();
+        this.uploader = null;
     }
 
     handleDeleteFile = (e) => {
@@ -147,7 +151,7 @@ class FileTable extends React.Component {
                                 multiple />
                             </div>
                             <div className="file-path-wrapper">
-                                <input className="file-path validate" type="text"/>
+                                <input className="file-path validate" type="text" placeholder="Choose files to upload. Uploading will start automatically"/>
                             </div>
                         </div>
                     </div>

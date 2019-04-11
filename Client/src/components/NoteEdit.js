@@ -7,6 +7,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 class NoteEdit extends React.Component {
+    _isMounted = false;
     state = {
         id: null,
         title: '',
@@ -15,11 +16,13 @@ class NoteEdit extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
         const id = this.props.match.params.note_id;
 
         if (id !== '-1') {
             if (this.props.socket) {
                 this.props.socket.on('note', (data) => {
+                    if (this._isMounted)
                     this.setState({
                         id: data.id,
                         title: data.title,
@@ -44,6 +47,10 @@ class NoteEdit extends React.Component {
             })
         }          
 
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     handleSave = e => {
