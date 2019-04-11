@@ -1,45 +1,54 @@
-const fs = require("fs-extra");
+const fs = require('fs-extra');
+const path = require('path')
+const dirname = path.dirname(__dirname);
 
-module.exports.deleteFile = function(request, response) {
-	if(!request.body) return response.sendStatus(400);
-	let file = __dirname + '/files/' + request.body.fileName;
-	console.log(file);
+module.exports.deleteDir = function(dir) {
+    let dirPath = dirname + '/files/' + dir;
+    console.log(dirPath);
+    fs.removeSync(dirPath);
+}
+
+module.exports.deleteFile = function(fileName, noteId) {
+	let file = dirname + '/files/' + noteId + '/' + fileName;
+
 	if (fs.existsSync(file)) {
-		fs.remove(file, err => {
-			if (err) return console.error(err);
-			console.log("deleted" + file);
-		});
+		fs.removeSync(file);
 	}
-
-	response.redirect('back');
 }
 
 module.exports.downloadFile = function(request, response) {
-	if(!request.body) return response.sendStatus(400);
-	let file = __dirname + '/files/' + request.body.fileName;
-
-	if (fs.existsSync(file)) {
-		console.log("download" + file);
-		response.download(file);
-	}
+    if (!request.body) response.sendStatus(403);
+    let noteId = request.body.noteId;
+    let fileName = request.body.fileName;
+  
+    let file = dirname + '/files/' + noteId + '/' + fileName;
+  
+    if (fs.existsSync(file)) {
+      console.log("download:", file);
+      response.download(file);
+    } else {
+      response.sendStatus(404);
+    }
 }
 
-module.exports.uploadFile = function(request, response) {
-	 console.log(request.file);
+module.exports.moveFile = function(noteId, pathToFile, fileName) {
+	if (!fs.existsSync(dirname + '/files/' + noteId)) {
+        fs.mkdirSync(dirname + '/files/' + noteId, {recursive: true});
+    }
+    if (fs.existsSync(pathToFile)) {
+        fs.renameSync(pathToFile, dirname + '/files/' + noteId + '/' + fileName);
+    }
+}
 
-	if (!fs.existsSync(__dirname + '/files/' + request.body.id)) {
-		fs.mkdirSync(__dirname + '/files/' + request.body.id, {recursive: true});
+module.exports.readFilesInDir = function(noteId) {
+    let path = dirname + '/files/' + noteId;
+    let files = [];
+
+    if (fs.existsSync(path)) {
+        fs.readdirSync(path).forEach(file => {
+            files.push(file);
+        });
     }
 
-	fs.rename(request.file.path, __dirname + '/files/' + request.body.id + '/' + request.file.originalname, function(err) {
-		if (err) throw err;
-
-		if (fs.existsSync(request.file.path)) {
-			fs.remove(request.file.path, err => {
-				if (err) return console.error(err);
-		});
-		}
-	});
-
-	response.redirect('back');
-}
+    return files;
+} 

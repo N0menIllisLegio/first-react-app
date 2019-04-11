@@ -25,6 +25,7 @@ class App extends React.Component {
 
     socket.on('error', (err) => {
       localStorage.removeItem('authToken');
+      console.error(err);
       this.props.history.push('/');
     });
      

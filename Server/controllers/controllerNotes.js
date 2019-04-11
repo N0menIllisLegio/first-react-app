@@ -1,4 +1,5 @@
 const fs = require("fs-extra");
+const files = require('./controllerFiles');
 const notesDB = "notes.json";
 
 function GetNote(noteId) {
@@ -123,6 +124,7 @@ module.exports.deleteNote = function(id) {
     if(index > -1){
         notes.splice(index, 1)[0];
 		RewriteNotes(notes);
+		files.deleteDir(id);
         return true;
     } else {
         return false;

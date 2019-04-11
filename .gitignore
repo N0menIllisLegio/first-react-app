@@ -24,3 +24,4 @@ yarn-error.log*
 Server/notes.json
 Server/users.json
 Server/users.json
+*.docx
