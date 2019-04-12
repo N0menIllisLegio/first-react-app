@@ -104,3 +104,5 @@ server.use((request, response) => {
 http.listen(PORT, function() {
   console.log(`Express server is running on http://localhost:${PORT} in ${server.get('env')} mode.`);
 });
+
+//Как лабораторные 3 и 4, но на сервере сделать API на GraphQL.
