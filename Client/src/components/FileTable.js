@@ -45,10 +45,6 @@ class FileTable extends React.Component {
 
     componentWillUnmount() {
         this._isMounted = false;
-
-        // this.uploader.removeEventListener('start', function(event) {
-        //     event.file.meta.noteId = this.state.noteId;
-        // })
         this.uploader.destroy();
         this.uploader = null;
     }
