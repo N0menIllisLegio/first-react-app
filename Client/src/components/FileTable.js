@@ -2,6 +2,7 @@ import React from 'react'
 import Loading from './Loading';
 import SocketIOFileUpload from 'socketio-file-upload';
 import Axios from 'axios';
+import gql from "graphql-tag";
 
 class FileTable extends React.Component {
     uploader = null;
@@ -14,30 +15,50 @@ class FileTable extends React.Component {
         files: null
     }
 
+    getFiles(id) {
+        Axios({
+            url: 'http://localhost:5000/graphql',
+            method: 'post',
+            data: {
+              query:`{ 
+                    readFiles(noteId: "${id}")
+                }`
+            }}).then((result) => {
+                // console.log(result);
+                this.setState({
+                    files: result.data.data.readFiles
+                })
+            });
+    }
+
+    upload = (file) => {
+        console.log("TRY", file)
+        this.props.client.mutate({
+            mutation: gql`
+                mutation uploadFile($file: Upload!) {
+                    Upload(file: $file) {
+                        success
+                    }
+                }
+            `,
+            variables: {
+                "file": file
+            },
+        }).then(response => {console.log("COMPLETE", file)});
+    }
+
     componentDidMount() {
         this._isMounted = true;
 
-        if (this.props.socket) {
+        if (this.props.client) {
             const id = this.props.id;
 
-            this.props.socket.on('files', (data) => {
-                if (this._isMounted)
-                    this.setState({
-                        files: data
-                    });
-            })
+            this.getFiles(id);
             
             this.setState({
                 noteId: id
             })
 
-            this.uploader = new SocketIOFileUpload(this.props.socket);
-
-            this.uploader.listenOnInput(document.getElementById('upload_input'));
-            this.uploader.addEventListener('start', function(event) {
-                event.file.meta.noteId = id;
-            });
-            this.props.socket.emit('get files', id);
         } else {
             this.props.history.push('/authentification/1');
         }
@@ -45,12 +66,22 @@ class FileTable extends React.Component {
 
     componentWillUnmount() {
         this._isMounted = false;
-        this.uploader.destroy();
-        this.uploader = null;
     }
 
     handleDeleteFile = (e) => {
-        this.props.socket.emit('delete file', e.target.id, this.state.noteId);
+        this.props.client.mutate({
+            mutation: gql`
+                mutation delFile($id: String!, $file: String!) {
+                    deleteFile(fileName: $file, noteId: $id)
+                }
+            `,
+            variables: {
+                "file": e.target.id,
+                "id": this.state.noteId
+            },
+        }).then(response => {if (response.data.deleteFile) { 
+            this.getFiles(this.state.noteId)
+        }});
     }
 
     handleDownloadFile = (e) => {
@@ -143,11 +174,10 @@ class FileTable extends React.Component {
                         <div className="file-field input-field">
                             <div className="btn red">
                                 <span>Upload Files</span>
-                                <input id="upload_input" type="file" 
-                                multiple />
+                                <input id="upload_input" type="file" onChange={ (e) => this.upload(e.target.files[0])}/>
                             </div>
                             <div className="file-path-wrapper">
-                                <input className="file-path validate" type="text" placeholder="Choose files to upload. Uploading will start automatically"/>
+                                <input className="file-path validate" type="text" placeholder="Choose file to upload."/>
                             </div>
                         </div>
                     </div>

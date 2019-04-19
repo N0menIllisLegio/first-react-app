@@ -2,6 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import Loading from './Loading'
 import { Select } from 'react-materialize'
+import gql from "graphql-tag";
+import Axios from 'axios'
 
 class Notes extends React.Component {
     _isMounted = false;
@@ -12,18 +14,34 @@ class Notes extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
-        if (this.props.socket === null) {
+        if (this.props.client === null) {
             this.props.history.push('/authentification/1');
         } else {
-            this.props.socket.on('notes', (data) => {
-                if (this._isMounted)
-                    this.setState({
-                        notes: data,
-                        displayedNotes: data
-                    })
-            })
+            let userId = localStorage.getItem('userId')
+            console.log(userId);
 
-            this.props.socket.emit('get all notes');
+            Axios({
+                url: 'http://localhost:5000/graphql',
+                method: 'post',
+                data: {
+                  query: `
+                            {
+                                getAllUserNotes(userId: ${userId}) {
+                                    id
+                                    userId
+                                    title
+                                    content
+                                    date
+                                    complete
+                                }
+                            }
+                    `
+                }
+              }).then((result) => {
+                this.setState({
+                        notes: result.data.data.getAllUserNotes,
+                        displayedNotes: result.data.data.getAllUserNotes})
+              });
         }
     }
 
@@ -32,7 +50,17 @@ class Notes extends React.Component {
     }
 
     handleCompleteCheckbox = (e) => {
-        this.props.socket.emit('change note status', e.target.id, e.target.checked);
+        this.props.client.mutate({
+            mutation: gql`
+                mutation checkNote($id: ID!, $status: Boolean!) {
+                    completeNote(id: $id, status: $status)
+                }
+            `,
+            variables: {
+                "id": e.target.id,
+                "status": e.target.checked
+            },
+        }).then(response => {if (!response.data.completeNote) { this.props.deleteUser(); this.props.history.push('/authentification/1'); }});
     }
 
     handleSelectChange = (e) => {

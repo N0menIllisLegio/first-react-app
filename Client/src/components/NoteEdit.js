@@ -3,6 +3,8 @@ import Loading from './Loading'
 import $ from "jquery";
 import M from "materialize-css";
 import DatePicker from "react-datepicker";
+import gql from "graphql-tag";
+import Axios from 'axios';
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -15,25 +17,41 @@ class NoteEdit extends React.Component {
         date: ''
     }
 
-    componentDidMount() {
+    componentDidMount() {  
+        if (this.props.client === null) {
+            this.props.history.push('/authentification/1');
+        }
+
         this._isMounted = true;
         const id = this.props.match.params.note_id;
-
+        
         if (id !== '-1') {
-            if (this.props.socket) {
-                this.props.socket.on('note', (data) => {
-                    if (this._isMounted)
-                    this.setState({
-                        id: data.id,
-                        title: data.title,
-                        content: data.content,
-                        date: data.date,
+            if (this.props.client) {
+                Axios({
+                    url: 'http://localhost:5000/graphql',
+                    method: 'post',
+                    data: {
+                        query: `{
+                            getNote(id: ${id}) {
+                                id
+                                title
+                                content
+                                date
+                            }
+                        }`
+                    }
+                    }).then((result) => {
+                        console.log(result)
+                        this.setState({
+                            id: result.data.data.getNote.id,
+                            title: result.data.data.getNote.title,
+                            content: result.data.data.getNote.content,
+                            date: result.data.data.getNote.date,
+                        });
+    
+                        M.textareaAutoResize($('#body_text'));
+                        M.updateTextFields();
                     });
-                    M.textareaAutoResize($('#body_text'));
-                    M.updateTextFields();
-                })
-
-                this.props.socket.emit('get note', id);
             } else {
                 this.props.history.push('/authentification/1');
             }
@@ -55,22 +73,40 @@ class NoteEdit extends React.Component {
 
     handleSave = e => {
         let note = {
-            id: this.state.id,
+            userId: parseInt(localStorage.getItem('userId'), 10),
             title: this.state.title,
             content: this.state.content,
             date: this.state.date
         };
 
-        if (note.id === null) {
-            this.props.socket.on('new note', (data) => 
-                this.props.history.push('/details/' + data.id));
+        if (this.state.id === null) {
+            this.props.client.mutate({
+                mutation: gql`
+                    mutation addNewNote($info: NoteInput!) {
+                        addNote(data: $info) {
+                            id
+                        }
+                    }
+                `,
+                variables: {
+                    "info": note
+                },
+            }).then(response => this.props.history.push('/details/' + response.data.addNote.id));
 
-            this.props.socket.emit('add note', note);
         } else {
-            this.props.socket.on('updated', (data) => 
-                this.props.history.push('/details/' + note.id));
-
-            this.props.socket.emit('update note', note.id, note);
+            this.props.client.mutate({
+                mutation: gql`
+                    mutation updNote($id: ID!, $info: NoteInput!) {
+                        updateNote(id: $id, data: $info) {
+                            id
+                        }
+                    }
+                `,
+                variables: {
+                    "id": this.state.id,
+                    "info": note
+                },
+            }).then(response => this.props.history.push('/details/' + response.data.updateNote.id));
         }
     }
 

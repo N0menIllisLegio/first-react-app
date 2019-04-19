@@ -51,26 +51,29 @@ module.exports.getAllUserNotes = function(userId) {
 	return GetNotes().filter(note => note.userId == userId);
 }
 
-module.exports.complete = function(id, status) {
+module.exports.completeNote = function(id, status) {
 	let notes = GetNotes();
+	let changed = false
 
 	for (var i = notes.length - 1; i >= 0; i--) {
 		if (notes[i].id == id) {
 			notes[i].complete = status;
 			console.log('COMPLETE STATUS CHANGED', notes[i]);
+			changed = true
 			break;
 		}
 	}
 	
 	RewriteNotes(notes);
-	return notes;
+	return changed;
 }
 
-module.exports.addNote = function(userId, data) {
+module.exports.addNote = function(data) {
+	console.log(data)
 	let notes = GetNotes();
 	let note = {
 		id: null,
-		userId: userId,
+		userId: data.userId,
 		title: data.title,
 		content: data.content,
 		date: data.date,
@@ -92,21 +95,21 @@ module.exports.addNote = function(userId, data) {
 
 module.exports.updateNote = function(id, data) {
 	let notes = GetNotes();
-	let updated = false;
-	console.log(id, data);
+	let note = null;
+
 	for (var i = notes.length - 1; i >= 0; i--) {
 		if (notes[i].id == id) {
 			notes[i].title = data.title;
 			notes[i].content = data.content;
 			notes[i].date = data.date;
-			updated = true;
+			note = notes[i];
 			console.log('UPDATED', notes[i]);
 			break;
 		}
 	}	
 	
 	RewriteNotes(notes);
-	return updated;
+	return note;
 }
 
 module.exports.deleteNote = function(id) {

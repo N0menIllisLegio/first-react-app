@@ -9,11 +9,15 @@ module.exports.deleteDir = function(dir) {
 }
 
 module.exports.deleteFile = function(fileName, noteId) {
-	let file = dirname + '/files/' + noteId + '/' + fileName;
+    let file = dirname + '/files/' + noteId + '/' + fileName;
+    let success = false
 
 	if (fs.existsSync(file)) {
-		fs.removeSync(file);
-	}
+        fs.removeSync(file);
+        success = true
+    }
+    
+    return success
 }
 
 module.exports.downloadFile = function(request, response) {

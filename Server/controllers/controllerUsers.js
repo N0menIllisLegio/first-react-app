@@ -102,7 +102,7 @@ module.exports.login = function(request, response, next) {
     } else if (bcrypt.compareSync(password, user.password)) {
         console.log('LOGIN', user);
         const token = jwt.sign({id: user.id}, request.app.get('secretKey'), {expiresIn: '24h'})
-        response.status(200).send({status: 'success', msg: 'User logged in', token: token, username: user.username})
+        response.status(200).send({status: 'success', msg: 'User logged in', token: token, username: user.username, id: user.id})
     } else {
         response.status(409).send({status: 'error', msg: 'Incorrect password'});
     } 

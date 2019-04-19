@@ -3,7 +3,6 @@ const server = require('express')();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const users = require('./routes/users.js');
-const files = require('./controllers/controllerFiles');
 
 const graphqlHTTP = require('express-graphql');
 const { typeDefs } = require('./schema')
@@ -17,8 +16,6 @@ server.use(bodyParser.urlencoded({ extended: false }));
 server.use(bodyParser.json());
 
 server.use('/users', users);
-server.post('/downloadFile', files.downloadFile);
-
 server.use('/graphql', graphqlHTTP({
   schema: typeDefs,
   rootValue: resolvers,
@@ -29,7 +26,7 @@ server.use((request, response) => {
   response.status(404).send('Nope, nothing here.')
 })     
 
-
+server.post('/downloadFile', files.downloadFile);
 
 server.listen(PORT, function() {
   console.log(`Express server is running on http://localhost:${PORT} in ${server.get('env')} mode.`);

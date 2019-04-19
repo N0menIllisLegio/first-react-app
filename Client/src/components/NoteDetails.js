@@ -1,6 +1,8 @@
 import React from 'react';
 import Loading from './Loading';
 import FileTable from './FileTable';
+import gql from "graphql-tag";
+import Axios from 'axios';
 
 class NoteDetails extends React.Component {
     _isMounted = false;
@@ -9,31 +11,57 @@ class NoteDetails extends React.Component {
     }
 
     handleCompleteCheckbox = (e) => {
-        this.props.socket.emit('change note status', e.target.id, e.target.checked);
+        this.props.client.mutate({
+            mutation: gql`
+                mutation checkNote($id: ID!, $status: Boolean!) {
+                    completeNote(id: $id, status: $status)
+                }
+            `,
+            variables: {
+                "id": e.target.id,
+                "status": e.target.checked
+            },
+        }).then(response => {if (!response.data.completeNote) { this.props.deleteUser(); this.props.history.push('/authentification/1'); }});
     }
 
     handleDelete = (e) => {
-        this.props.socket.on('deleted', (data) => {
-            this.props.history.push('/');
-        });
-
-        this.props.socket.emit('delete note', this.state.note.id);
+        this.props.client.mutate({
+            mutation: gql`
+                mutation delNote($id: ID!) {
+                    deleteNote(id: $id)
+                }
+            `,
+            variables: {
+                "id": this.state.note.id
+            },
+        }).then(response => {this.props.history.push('/'); });
     }
 
     componentDidMount() {
         this._isMounted = true;
         const id = this.props.match.params.note_id;
 
-        if (this.props.socket) {
-            this.props.socket.on('note', (data) => {
-                if (this._isMounted) {
-                    this.setState({
-                        note: data
-                    });
+        if (this.props.client) {
+            Axios({
+                url: 'http://localhost:5000/graphql',
+                method: 'post',
+                data: {
+                    query: `{
+                        getNote(id: ${id}) {
+                            id
+                            userId
+                            title
+                            content
+                            date
+                            complete
+                        }
+                    }`
                 }
-            })
-
-            this.props.socket.emit('get note', id);
+                }).then((result) => {
+                    console.log(result)
+                    this.setState({
+                        note: result.data.data.getNote,})
+                });
         } else {
             this.props.history.push('/authentification/1');
         }
@@ -74,7 +102,7 @@ class NoteDetails extends React.Component {
                     </div>
                 </div>
             </div>
-            <FileTable id={this.state.note.id} socket={this.props.socket}/>
+            <FileTable id={this.state.note.id} client={this.props.client}/>
         </div>
         ) : (
             <Loading />
