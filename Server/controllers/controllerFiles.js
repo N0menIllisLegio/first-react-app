@@ -56,3 +56,24 @@ module.exports.readFilesInDir = function(noteId) {
 
     return files;
 } 
+
+module.exports.uploadFile = function(request, response) {
+    console.log(request.file);
+    console.log(request.body.id);
+
+   if (!fs.existsSync(dirname + '/files/' + request.body.id)) {
+       fs.mkdirSync(dirname + '/files/' + request.body.id, {recursive: true});
+   }
+
+   fs.rename(request.file.path, dirname + '/files/' + request.body.id + '/' + request.file.originalname, function(err) {
+       if (err) throw err;
+
+       if (fs.existsSync(request.file.path)) {
+           fs.remove(request.file.path, err => {
+               if (err) return console.error(err);
+       });
+       }
+   });
+
+   response.sendStatus(200);
+}

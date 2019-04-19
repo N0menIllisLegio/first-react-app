@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "apollo-boost": "^0.3.1",
-    "apollo-cache-inmemory": "^1.5.1",
     "axios": "^0.18.0",
     "graphql": "^14.2.1",
     "graphql-tag": "^2.10.1",
@@ -16,9 +15,7 @@
     "react-dom": "^16.8.6",
     "react-materialize": "^3.0.5",
     "react-router-dom": "^5.0.0",
-    "react-scripts": "2.1.8",
-    "socket.io-client": "^2.2.0",
-    "socketio-file-upload": "^0.7.0"
+    "react-scripts": "2.1.8"
   },
   "scripts": {
     "start": "react-scripts start",

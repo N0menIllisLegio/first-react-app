@@ -7,18 +7,6 @@ import NoteDetails from './components/NoteDetails'
 import Authentification from './components/Authentification';
 import Registration from './components/Registration';
 import ApolloClient from "apollo-boost";
-import { InMemoryCache } from 'apollo-cache-inmemory';
-
-const defaultOptions = {
-  watchQuery: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'ignore',
-  },
-  query: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'all',
-  },
-}
 
 class App extends React.Component {
   state = {
@@ -30,11 +18,8 @@ class App extends React.Component {
     localStorage.setItem('authToken', data.token);
     localStorage.setItem('userId', data.id);
     
-
     let client = new ApolloClient({
-      uri: "http://localhost:5000/graphql",
-      cache: new InMemoryCache(),
-      defaultOptions: defaultOptions,
+      uri: "http://localhost:5000/graphql"
     });
      
     this.setState({ 

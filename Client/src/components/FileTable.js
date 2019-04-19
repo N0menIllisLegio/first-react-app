@@ -1,6 +1,5 @@
 import React from 'react'
 import Loading from './Loading';
-import SocketIOFileUpload from 'socketio-file-upload';
 import Axios from 'axios';
 import gql from "graphql-tag";
 
@@ -33,18 +32,21 @@ class FileTable extends React.Component {
 
     upload = (file) => {
         console.log("TRY", file)
-        this.props.client.mutate({
-            mutation: gql`
-                mutation uploadFile($file: Upload!) {
-                    Upload(file: $file) {
-                        success
-                    }
-                }
-            `,
-            variables: {
-                "file": file
-            },
-        }).then(response => {console.log("COMPLETE", file)});
+
+        const formData = new FormData();
+        formData.append('myFile', file);
+        formData.append('id', this.state.noteId);
+        const config = {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+        };
+        Axios.post('http://localhost:5000/uploadFile',
+            formData, config
+        ).then((result) => {
+                console.log(result);
+                this.getFiles(this.state.noteId)
+            });
     }
 
     componentDidMount() {
@@ -174,7 +176,7 @@ class FileTable extends React.Component {
                         <div className="file-field input-field">
                             <div className="btn red">
                                 <span>Upload Files</span>
-                                <input id="upload_input" type="file" onChange={ (e) => this.upload(e.target.files[0])}/>
+                                <input id="upload_input" type="file" name="myFile" onChange={ (e) => this.upload(e.target.files[0])}/>
                             </div>
                             <div className="file-path-wrapper">
                                 <input className="file-path validate" type="text" placeholder="Choose file to upload."/>

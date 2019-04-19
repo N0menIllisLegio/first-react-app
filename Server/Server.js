@@ -4,10 +4,12 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const users = require('./routes/users.js');
 const files = require('./controllers/controllerFiles');
+const multer = require('multer')
 
 const graphqlHTTP = require('express-graphql');
 const { typeDefs } = require('./schema')
 const { resolvers } = require('./resolvers')
+const upload = multer({ dest: __dirname + '/uploadedFiles'});
 
 const PORT = 5000;
 
@@ -18,6 +20,7 @@ server.use(bodyParser.json());
 
 server.use('/users', users);
 server.post('/downloadFile', files.downloadFile);
+server.post('/uploadFile', upload.single('myFile'), files.uploadFile);
 
 server.use('/graphql', graphqlHTTP({
   schema: typeDefs,
@@ -28,8 +31,6 @@ server.use('/graphql', graphqlHTTP({
 server.use((request, response) => {
   response.status(404).send('Nope, nothing here.')
 })     
-
-
 
 server.listen(PORT, function() {
   console.log(`Express server is running on http://localhost:${PORT} in ${server.get('env')} mode.`);
