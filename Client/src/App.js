@@ -62,9 +62,3 @@ class App extends React.Component {
 }
 
 export default App;
-
-
-// GET - retrieve data from the server
-// POST - send data to the server 
-// PUT - update data
-// DELETE - delete data
