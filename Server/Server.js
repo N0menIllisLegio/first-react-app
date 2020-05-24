@@ -3,15 +3,24 @@ const server = require('express')();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const users = require('./routes/users.js');
+
 const files = require('./controllers/controllerFiles');
+const controllerNotes = require('./controllers/controllerNotes');
+const controllerUsers = require('./controllers/controllerUsers');
+
 const multer = require('multer')
 
 const graphqlHTTP = require('express-graphql');
-const { typeDefs } = require('./schema')
-const { resolvers } = require('./resolvers')
-const upload = multer({ dest: __dirname + '/uploadedFiles'});
+const { typeDefs } = require('./schema');
+const { resolvers } = require('./resolvers');
+const uploaderDir =  __dirname + '/uploadedFiles';
+const upload = multer({ dest: uploaderDir });
 
 const PORT = 5000;
+
+files.initializeUploadDir(uploaderDir);
+controllerNotes.initializeNotesFile();
+controllerUsers.initializeUsersFile();
 
 server.set('secretKey', 'nodeGraphQL');
 server.use(cors());
