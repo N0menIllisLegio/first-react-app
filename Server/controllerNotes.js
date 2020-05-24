@@ -42,6 +42,12 @@ function RewriteNotes(notes) {
 	fs.writeFileSync("notes.json", data);
 }
 
+module.exports.initializeNotesFile = function() {
+	fs.outputJson(notesDB, [], function(err) {
+	  console.log('Initalize file error: ' + err); //null
+	})
+}
+
 module.exports.getNote = function(request, response) {
 	if(!request.query) return response.sendStatus(400);
 	let note = GetNote(request.query.id);
@@ -90,7 +96,7 @@ module.exports.addNote = function(request, response) {
 
 	let maxId = Math.max.apply(Math, notes.map(parseNote => parseNote.id));
 
-	if (maxId == Infinity) {
+	if (maxId == Infinity || maxId == -Infinity) {
 		maxId = 0;
 	}
 

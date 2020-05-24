@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const controllerNotes = require('./controllerNotes.js');
 const server = express();
+controllerNotes.initializeNotesFile();
 
 server.use(cors());
 server.use(bodyParser.urlencoded({ extended: false }));
