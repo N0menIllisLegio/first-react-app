@@ -2,6 +2,10 @@ const fs = require('fs-extra');
 const path = require('path')
 const dirname = path.dirname(__dirname);
 
+module.exports.initializeUploadDir = function(dir) {
+    fs.ensureDirSync(dir);
+}
+
 module.exports.deleteDir = function(dir) {
     let dirPath = dirname + '/files/' + dir;
     console.log(dirPath);

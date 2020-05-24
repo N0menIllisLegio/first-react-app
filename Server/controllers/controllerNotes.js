@@ -43,6 +43,19 @@ function RewriteNotes(notes) {
 	fs.writeFileSync(notesDB, data);
 }
 
+module.exports.initializeNotesFile = function() {
+	fs.createFile(notesDB, function(err) {
+		if (err !== undefined && err !== null) {
+			console.log('Initalize file error: ' + err); 
+		} else {
+			let data = fs.readFileSync(notesDB, "utf8");
+			if (data.length == 0) {
+				fs.writeJson(notesDB, [], function(err) { });
+			}
+		}
+	})
+}
+
 module.exports.getNote = function(id) {
 	return GetNote(id);
 }

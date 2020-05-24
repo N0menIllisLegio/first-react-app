@@ -8,15 +8,21 @@ const server = express();
 const http = require('http').Server(server);
 const io = require('socket.io')(http);
 
+const uploaderDir = path.join(__dirname, 'uploadedFiles');
 var siofu = require("socketio-file-upload");
 const uploader = new siofu();
-      uploader.dir = path.join(__dirname, 'uploadedFiles');
+      uploader.dir = uploaderDir;
 
 const files = require('./controllers/controllerFiles');
 const notes = require('./controllers/controllerNotes');
+const usersController = require('./controllers/controllerUsers');
 const users = require('./routes/users.js');
 
 const PORT = 5000;
+
+notes.initializeNotesFile();
+usersController.initializeUsersFile();
+files.initializeUploadDir(uploaderDir);
 
 files.dirname = __dirname;
 server.set('secretKey', 'nodeRestApi');
