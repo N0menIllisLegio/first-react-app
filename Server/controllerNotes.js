@@ -43,8 +43,15 @@ function RewriteNotes(notes) {
 }
 
 module.exports.initializeNotesFile = function() {
-	fs.outputJson(notesDB, [], function(err) {
-	  console.log('Initalize file error: ' + err); //null
+	fs.createFile(notesDB, function(err) {
+		if (err !== undefined && err !== null) {
+			console.log('Initalize file error: ' + err); 
+		} else {
+			let data = fs.readFileSync(notesDB, "utf8");
+			if (data.length == 0) {
+				fs.writeJson(notesDB, [], function(err) { });
+			}
+		}
 	})
 }
 
