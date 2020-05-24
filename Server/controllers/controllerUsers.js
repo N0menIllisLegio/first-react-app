@@ -59,6 +59,19 @@ function RewriteUsers(users) {
 	fs.writeFileSync(usersDB, data);
 }
 
+module.exports.initializeNotesFile = function() {
+    fs.createFile(usersDB, function(err) {
+        if (err !== undefined && err !== null) {
+            console.log('Initalize file error: ' + err); 
+        } else {
+            let data = fs.readFileSync(usersDB, "utf8");
+            if (data.length == 0) {
+                fs.writeJson(usersDB, [], function(err) { });
+            }
+        }
+    })
+}
+
 module.exports.register = function(request, response) {
     if(!request.body) return response.status(400).send({status: 'error', msg: 'Empty body of request'});
     

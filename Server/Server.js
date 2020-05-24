@@ -1,3 +1,6 @@
+const controllerNotes = require('./controllers/controllerNotes.js');
+const controllerUsers = require('./controllers/controllerUsers.js');
+
 const bodyParser = require('body-parser');
 const express = require('express');
 const cors = require('cors');
@@ -5,6 +8,9 @@ var jwt = require('jsonwebtoken');
 const users = require('./routes/users.js');
 const notes = require('./routes/notes.js');
 const server = express();
+
+controllerNotes.initializeNotesFile();
+controllerUsers.initializeNotesFile();
 
 server.set('secretKey', 'nodeRestApi');
 
